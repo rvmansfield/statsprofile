@@ -1,0 +1,53 @@
+{% extends "account/base_entrance.html" %}
+{% load allauth i18n %}
+{% block head_title %}
+    {% trans "Signup" %}
+{% endblock head_title %}
+{% block content %}
+    <div class="d-flex align-items-center justify-content-center py-5">
+        <div class="card shadow-sm" style="width:100%;max-width:520px;">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <a href="{% url 'index' %}" class="site-title">StatsProfile</a>
+                    <h1 class="h4 mt-2">{% trans "Sign Up" %}</h1>
+                    <p class="text-muted">{% blocktranslate %}Create an account to start tracking performance.{% endblocktranslate %}</p>
+                </div>
+
+                {% if not SOCIALACCOUNT_ONLY %}
+                    {% url 'account_signup' as action_url %}
+                    {% element form form=form method="post" action=action_url tags="entrance,signup" %}
+                        {% slot body %}
+                            {% csrf_token %}
+                            {% element fields form=form unlabeled=True %}
+                            {% endelement %}
+                            {{ redirect_field }}
+                        {% endslot %}
+                        {% slot actions %}
+                            <div class="d-grid">
+                                {% element button tags="prominent,signup" type="submit" %}
+                                    {% trans "Sign Up" %}
+                                {% endelement %}
+                            </div>
+                        {% endslot %}
+                    {% endelement %}
+                {% endif %}
+
+                {% if PASSKEY_SIGNUP_ENABLED %}
+                    <hr />
+                    {% element button href=signup_by_passkey_url tags="prominent,signup,outline,primary" %}
+                        {% trans "Sign up using a passkey" %}
+                    {% endelement %}
+                {% endif %}
+
+                {% if SOCIALACCOUNT_ENABLED %}
+                    <hr />
+                    {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+                {% endif %}
+
+                <div class="text-center mt-4">
+                    <p class="mb-0">{% blocktranslate %}Already have an account? <a href="{{ login_url }}">Sign in</a>.{% endblocktranslate %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

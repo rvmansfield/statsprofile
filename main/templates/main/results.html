@@ -1,0 +1,216 @@
+
+
+{% extends 'main/base.html' %}
+
+{% block title %}Player Stats - Results{% endblock %}
+
+{% block extra_css %}
+        .result-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .result-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+        .metric-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #0d6efd;
+        }
+        .metric-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            color: #333;
+            font-size: 1.1rem;
+        }
+        .btn-back {
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+            color: white;
+        }
+        .success-icon {
+            text-align: center;
+            font-size: 3rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+        .chart-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid #28a745;
+        }
+        .chart-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .comparison-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+{% endblock %}
+
+{% block content %}
+    <div class="result-container">
+        
+        <h2 class="result-title">Player Statistics Results</h2>
+        
+       
+        
+        {% if comparison_data %}
+        <div class="chart-container">
+            <h3 class="chart-title">{{ comparison_data.metric_type_display }} Comparison (Age {{ comparison_data.player_age }})</h3>
+            
+            {% if comparison_data.no_data %}
+                <div class="text-center">
+                    <p class="text-muted">No comparison data available for age {{ comparison_data.player_age }} players.</p>
+                    <p class="text-muted">You're the first to submit this metric for your age group!</p>
+                </div>
+            {% else %}
+                <div class="comparison-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ player_metric.metric }}</div>
+                        <div class="stat-label">Your Value</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ comparison_data.min_value|floatformat:1 }}</div>
+                        <div class="stat-label">Age {{ comparison_data.player_age }} Min</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ comparison_data.max_value|floatformat:1 }}</div>
+                        <div class="stat-label">Age {{ comparison_data.player_age }} Max</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ comparison_data.average|floatformat:1 }}</div>
+                        <div class="stat-label">Age {{ comparison_data.player_age }} Average</div>
+                    </div>
+                </div>
+                
+                {% if comparison_data.percentile == 0 %}
+                    Your {{ comparison_data.metric_type_display }} is at or lower than the min value
+                {% elif comparison_data.percentile == 100 %}
+                    Your {{ comparison_data.metric_type_display }} is at or higher than the max value
+                
+                {% else %}
+                    A {{ comparison_data.metric_type_display }} of {{ comparison_data.current_value }} is in the <b>{{ comparison_data.percentile }}th</b> percentile of players in this age group. 
+                {% endif %}
+
+                
+                <canvas id="myChart" height="100"></canvas>
+                
+                
+                
+            {% endif %}
+           
+            
+           
+        </div>
+        {% endif %}
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'index' %}" class="btn-back">Submit Another Metric</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    {% if comparison_data and not comparison_data.no_data %}
+    <script>
+        const ctx = document.getElementById('myChart');
+        
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Metric'],
+            datasets: [
+              {
+                label: 'Range',
+                data: [{{ comparison_data.max_value|floatformat:1 }}],  // your "max" of the range
+                backgroundColor: 'rgba(75, 192, 192, 0.4)',
+                barPercentage: .8,
+                
+                
+              }
+            ]
+          },
+          options: {
+            
+            indexAxis: 'y', // horizontal bar
+            
+            plugins: {
+              annotation: {
+                annotations: {
+                  marker: {
+                    type: 'line',
+                    xMin: {{ player_metric.metric }},  // <-- your single value
+                    xMax: {{ player_metric.metric }},
+                    borderColor: 'red',
+                    borderWidth: 3,
+                    label: {
+                      content: 'Value: 65',
+                      enabled: true,
+                      position: 'center'
+                    }
+                  }
+                }
+              }
+            },
+            scales: {
+              x: { 
+                min:{{ comparison_data.min_value|floatformat:1 }}, 
+                max: {{ comparison_data.max_value|floatformat:1 }}, 
+                grace: '10%',
+            } 
+            }
+          }
+        });
+        </script>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "account/base_entrance.html" %}
+{% load i18n %}
+{% load allauth account %}
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+{% block content %}
+    <div class="d-flex align-items-center justify-content-center py-5">
+        <div class="card shadow-sm" style="width:100%;max-width:420px;">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <a href="{% url 'index' %}" class="site-title">StatsProfile</a>
+                    <h1 class="h4 mt-2">{% trans "Sign In" %}</h1>
+                    <p class="text-muted">{% blocktranslate %}Welcome back — sign in to continue.{% endblocktranslate %}</p>
+                </div>
+
+                {% if not SOCIALACCOUNT_ONLY %}
+                    <form method="post" action="{% url 'account_login' %}" class="login-form">
+                        {% csrf_token %}
+
+                        {{ form.non_field_errors }}
+                        
+                        <div class="container">
+                            <div class="row">  
+                                <div class="col-3"><label for="{{ form.login.id_for_label }}">Username</label></div>
+                                <div class="col-9">
+                                    <div class="form-group">
+                            
+                                        {{ form.login }}
+                                        {{ form.login.errors }}
+                                    </div>
+                                </div>
+                            </div>
+                       
+                            <div class="row">  
+                                <div class="col-3"><label for="{{ form.password.id_for_label }}">Password</label></div>
+                                <div class="col-9">
+                                    <div class="form-group">
+                                        {{ form.password }}
+                                        {{ form.password.errors }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                              
+                    
+
+                        
+
+                        {% if redirect_field_value %}
+                            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                        {% endif %}
+
+                        <button type="submit" class="btn-primary">Sign In</button>
+                        </form>
+                {% endif %}
+
+                {% if LOGIN_BY_CODE_ENABLED or PASSKEY_LOGIN_ENABLED %}
+                    <hr />
+                    <div class="d-grid gap-2">
+                        {% if PASSKEY_LOGIN_ENABLED %}
+                            {% element button type="submit" form="mfa_login" id="passkey_login" tags="prominent,login,outline,primary" %}
+                                {% trans "Sign in with a passkey" %}
+                            {% endelement %}
+                        {% endif %}
+                        {% if LOGIN_BY_CODE_ENABLED %}
+                            {% element button href=request_login_code_url tags="prominent,login,outline,primary" %}
+                                {% trans "Send me a sign-in code" %}
+                            {% endelement %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if SOCIALACCOUNT_ENABLED %}
+                    <hr />
+                    {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+                {% endif %}
+
+                <div class="text-center mt-4">
+                    <p class="mb-0">{% blocktranslate %}Don't have an account? <a href="{{ signup_url }}">Sign up</a>.{% endblocktranslate %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+{% block extra_body %}
+    {{ block.super }}
+    {% if PASSKEY_LOGIN_ENABLED %}
+        {% include "mfa/webauthn/snippets/login_script.html" with button_id="passkey_login" %}
+    {% endif %}
+{% endblock %}

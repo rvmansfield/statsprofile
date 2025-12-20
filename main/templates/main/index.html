@@ -1,0 +1,248 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Stats Profile - Input Form{% endblock %}
+
+{% block extra_css %}
+        .hero-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+        
+        .hero-image {
+            flex-shrink: 0;
+            width: 200px;
+            height: 200px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .hero-tagline {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .hero-tagline h1 {
+            color: #333;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .hero-tagline p {
+            color: #6c757d;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            margin: 2rem auto 0;
+        }
+        .form-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+        
+        /* Validation styling */
+        .form-control.is-valid {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+        
+        .numeric-hint {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .hero-section {
+                flex-direction: column;
+                padding: 2rem;
+                gap: 2rem;
+            }
+            
+            .hero-image {
+                width: 100%;
+                max-width: 300px;
+                height: 250px;
+            }
+            
+            .hero-tagline h1 {
+                font-size: 2rem;
+                text-align: center;
+            }
+            
+            .hero-tagline p {
+                font-size: 1rem;
+                text-align: center;
+            }
+        }
+        /* Small helper used by the hanging icons feature */
+        .icon-square {
+            width: 4rem;
+            height: 4rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            font-size: 1.5rem;
+        }
+        /* Slightly larger icon when needed */
+        .icon-square .icon-emoji {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+{% endblock %}
+
+{% block content %}
+    <div class="hero-section">
+        <div class="hero-image">
+            <img src="{% static 'main/images/hero-image.jpg' %}" alt="Player Statz" id="hero-image">
+        </div>
+        <div class="hero-tagline">
+            <h1>Your Path to the Next Level Starts Here.</h1>
+            <p>Track your performance, analyze your progress, and elevate your game with comprehensive player statistics.</p>
+            <br>
+            <p>Check out our <a href="{% url 'evaluate' %}">Evaluation Tool</a> and see how you stack up!</p>
+            
+        </div>
+    </div>
+    <div class="px-4 pt-5 my-5 text-center">
+        <h1 class="display-4 fw-bold text-body-emphasis">
+          Centered screenshot
+        </h1>
+        <div class="col-lg-6 mx-auto">
+          <p class="lead mb-4">
+            Quickly design and customize responsive mobile-first sites with
+            Bootstrap, the world’s most popular front-end open source toolkit,
+            featuring Sass variables and mixins, responsive grid system,
+            extensive prebuilt components, and powerful JavaScript plugins.
+          </p>
+          <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
+            <button type="button" class="btn btn-primary btn-lg px-4 me-sm-3">
+              Primary button
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-lg px-4">
+              Secondary
+            </button>
+          </div>
+        </div>
+        <div class="overflow-hidden" style="max-height: 30vh">
+          <div class="container px-5">
+            <img
+              src="{% static 'main/images/homeprofile.png' %}"
+              class="img-fluid border rounded-3 shadow-lg mb-4"
+              alt="Example image"
+              width="900"
+              height="700"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+
+    <div class="container px-4 py-5" id="hanging-icons">
+        
+
+        <div class="row g-4 py-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
+            <div class="col d-flex align-items-start">
+                <div class="icon-square bg-light text-dark flex-shrink-0 me-3">
+                    <span class="icon-emoji" aria-hidden="true">📊</span>
+                </div>
+                <div>
+                    <h3 class="fs-4">Player Insights</h3>
+                    <p>Deep analytics about player performance across matches and seasons.</p>
+                    <a href="{% url 'evaluate' %}" class="btn btn-sm btn-primary">Learn more</a>
+                </div>
+            </div>
+
+            <div class="col d-flex align-items-start">
+                <div class="icon-square bg-light text-dark flex-shrink-0 me-3">
+                    <span class="icon-emoji" aria-hidden="true">⚡</span>
+                </div>
+                <div>
+                    <h3 class="fs-4">Real-time Metrics</h3>
+                    <p>Quick feedback on current form so you can adapt and improve faster.</p>
+                    <a href="#" class="btn btn-sm btn-primary">Get started</a>
+                </div>
+            </div>
+
+            <div class="col d-flex align-items-start">
+                <div class="icon-square bg-light text-dark flex-shrink-0 me-3">
+                    <span class="icon-emoji" aria-hidden="true">🔒</span>
+                </div>
+                <div>
+                    <h3 class="fs-4">Secure & Private</h3>
+                    <p>Your data is protected. Share only what you want with teammates or coaches.</p>
+                    <a href="#" class="btn btn-sm btn-primary">Learn how</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+      
+    
+    
+{% endblock %}
+

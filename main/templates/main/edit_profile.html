@@ -1,0 +1,91 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block extra_css %}
+    .form-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 500;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+    .form-control:focus {
+        border-color: #0d6efd;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .btn-submit:hover {
+        transform: translateY(-2px);
+    }
+    .btn-cancel {
+        background: #e9ecef;
+        color: #495057;
+        margin-right: 1rem;
+    }
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="mb-4">Edit Profile</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+                {% for error in field.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+            {% if field.help_text %}
+                <small class="text-muted">{{ field.help_text }}</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="form-group">
+            <a href="{% url 'profile' %}" class="btn btn-cancel">Cancel</a>
+            <button type="submit" class="btn-submit">Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

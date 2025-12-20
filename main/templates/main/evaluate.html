@@ -1,0 +1,153 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Stats Profile - Input Form{% endblock %}
+
+{% block extra_css %}
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .form-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+        
+        /* Validation styling */
+        .form-control.is-valid {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+        
+        .numeric-hint {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+{% endblock %}
+
+{% block content %}
+    <div class="form-container">
+        <h2 class="form-title">Player Statistics Input</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="{{ form.metricType.id_for_label }}" class="form-label">Metric Type</label>
+                {{ form.metricType }}
+                {% if form.metricType.errors %}
+                    <div class="text-danger">{{ form.metricType.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.metric.id_for_label }}" class="form-label">Metric</label>
+                {{ form.metric }}
+                <div class="numeric-hint">Enter a numeric value (e.g., 85.5 for velocity, 6.8 for dash time)</div>
+                {% if form.metric.errors %}
+                    <div class="text-danger">{{ form.metric.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.ageCaptured.id_for_label }}" class="form-label">Age Captured</label>
+                {{ form.ageCaptured }}
+                <div class="numeric-hint">Select your age (12-20)</div>
+                {% if form.ageCaptured.errors %}
+                    <div class="text-danger">{{ form.ageCaptured.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="d-grid">
+                <button type="submit" class="btn btn-submit">Submit</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        function validateNumeric(input) {
+            // Remove any non-numeric characters except decimal point
+            let value = input.value.replace(/[^0-9.]/g, '');
+            
+            // Ensure only one decimal point
+            let parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            // Update the input value
+            input.value = value;
+            
+            // Add visual feedback
+            if (value === '' || isNaN(value)) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+            } else {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+            }
+        }
+        
+        // Add form validation on submit
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                const metricInput = document.getElementById('{{ form.metric.id_for_label }}');
+                const ageInput = document.getElementById('{{ form.ageCaptured.id_for_label }}');
+                
+                // Validate metric field
+                if (metricInput.value === '' || isNaN(metricInput.value) || parseFloat(metricInput.value) < 0) {
+                    e.preventDefault();
+                    metricInput.classList.add('is-invalid');
+                    alert('Please enter a valid numeric value for the metric.');
+                    return false;
+                }
+                
+                // Validate age field (must be selected)
+                if (!ageInput.value) {
+                    e.preventDefault();
+                    ageInput.classList.add('is-invalid');
+                    alert('Please select an age between 12 and 20.');
+                    return false;
+                }
+            });
+        });
+    </script>
+{% endblock %}

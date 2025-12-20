@@ -1,0 +1,296 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Capture Metrics - Player Statz{% endblock %}
+
+{% block extra_css %}
+        .capture-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .capture-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #0d6efd;
+        }
+        .section-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        .metric-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .metric-label {
+            flex: 1;
+            font-weight: 500;
+            color: #333;
+            margin-right: 1rem;
+        }
+        .metric-input-group {
+            flex: 0 0 200px;
+            display: flex;
+            align-items: center;
+        }
+        .metric-input {
+            width: 100%;
+            margin-right: 0.5rem;
+        }
+        .metric-unit {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+        .form-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        .text-danger {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .metric-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .metric-label {
+                margin-right: 0;
+                margin-bottom: 0.5rem;
+            }
+            .metric-input-group {
+                flex: none;
+                width: 100%;
+            }
+        }
+{% endblock %}
+
+{% block content %}
+    <div class="capture-container">
+        <h2 class="capture-title">Capture Metrics</h2>
+        
+        <div class="alert-info">
+            <strong>Instructions:</strong> Fill in the metrics you want to record. You can leave fields blank if you don't have data for that metric. All metrics will be saved with the same age, date, and notes.
+        </div>
+        
+        <form method="post" id="captureForm">
+            {% csrf_token %}
+            
+            <!-- Common Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">Common Information</h3>
+                
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.ageCaptured.id_for_label }}" class="form-label">Age Captured</label>
+                        {{ form.ageCaptured }}
+                        <div class="form-text">{{ form.ageCaptured.help_text }}</div>
+                        {% if form.ageCaptured.errors %}
+                            <div class="text-danger">{{ form.ageCaptured.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.dateCaptured.id_for_label }}" class="form-label">Date Captured</label>
+                        {{ form.dateCaptured }}
+                        <div class="form-text">{{ form.dateCaptured.help_text }}</div>
+                        {% if form.dateCaptured.errors %}
+                            <div class="text-danger">{{ form.dateCaptured.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.capturedBy.id_for_label }}" class="form-label">Captured By</label>
+                        {{ form.capturedBy }}
+                        <div class="form-text">{{ form.capturedBy.help_text }}</div>
+                        {% if form.capturedBy.errors %}
+                            <div class="text-danger">{{ form.capturedBy.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                        {{ form.notes }}
+                        <div class="form-text">{{ form.notes.help_text }}</div>
+                        {% if form.notes.errors %}
+                            <div class="text-danger">{{ form.notes.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Metrics Section -->
+            <div class="form-section">
+                <h3 class="section-title">Player Metrics</h3>
+                
+                {% for field in form %}
+                    {% if field.name|slice:":7" == "metric_" %}
+                        <div class="metric-row">
+                            <div class="metric-label">
+                                {{ field.label }}
+                            </div>
+                            <div class="metric-input-group">
+                                {{ field }}
+                                <span class="metric-unit">
+                                    {% if field.name == "metric_60" %}seconds{% else %}mph{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% if field.errors %}
+                            <div class="text-danger">{{ field.errors }}</div>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <button type="submit" class="btn-submit">Save Metrics</button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        function validateNumeric(input) {
+            // Remove any non-numeric characters except decimal point
+            let value = input.value.replace(/[^0-9.]/g, '');
+            
+            // Ensure only one decimal point
+            let parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            // Limit to 2 decimal places
+            if (parts.length === 2 && parts[1].length > 2) {
+                value = parts[0] + '.' + parts[1].substring(0, 2);
+            }
+            
+            // Update the input value
+            input.value = value;
+            
+            // Validate the format (number with up to 2 decimal places)
+            const decimalPattern = /^\d+(\.\d{1,2})?$/;
+            const isValid = value === '' || decimalPattern.test(value);
+            
+            // Add visual feedback
+            if (isValid) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+            } else {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+            }
+        }
+        
+        // Add validation to all metric inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const metricInputs = document.querySelectorAll('.metric-input');
+            metricInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    validateNumeric(this);
+                });
+            });
+            
+            // Form validation on submit
+            const form = document.getElementById('captureForm');
+            form.addEventListener('submit', function(e) {
+                let hasAtLeastOneMetric = false;
+                const ageInput = document.getElementById('{{ form.ageCaptured.id_for_label }}');
+                
+                // Check if at least one metric is filled
+                metricInputs.forEach(input => {
+                    if (input.value && input.value.trim() !== '') {
+                        hasAtLeastOneMetric = true;
+                    }
+                });
+                
+                // Validate age field (required)
+                if (!ageInput.value) {
+                    e.preventDefault();
+                    ageInput.classList.add('is-invalid');
+                    alert('Please select an age between 12 and 20.');
+                    return false;
+                }
+                
+                // Check if at least one metric is provided
+                if (!hasAtLeastOneMetric) {
+                    e.preventDefault();
+                    alert('Please enter at least one metric value.');
+                    return false;
+                }
+                
+                // Validate numeric inputs
+                let hasInvalidInput = false;
+                const decimalPattern = /^\d+(\.\d{1,2})?$/;
+                metricInputs.forEach(input => {
+                    if (input.value && (!decimalPattern.test(input.value) || parseFloat(input.value) < 0)) {
+                        input.classList.add('is-invalid');
+                        hasInvalidInput = true;
+                    }
+                });
+                
+                if (hasInvalidInput) {
+                    e.preventDefault();
+                    alert('Please enter valid numbers with up to 2 decimal places for metrics.');
+                    return false;
+                }
+            });
+        });
+    </script>
+{% endblock %}
