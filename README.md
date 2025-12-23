@@ -1,2 +1,0 @@
-# statsprofile
-Stats Profile app
