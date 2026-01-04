@@ -5,7 +5,7 @@ from allauth.account.forms import SignupForm
 class PlayerMetricForm(forms.ModelForm):
     class Meta:
         model = PlayerMetric
-        fields = ['metricType', 'metric', 'ageCaptured', 'dateCaptured', 'notes']
+        fields = ['metricType', 'metric', 'playerAge']
         widgets = {
             'metricType': forms.Select(attrs={'class': 'form-control'}),
             'metric': forms.NumberInput(attrs={
@@ -13,19 +13,9 @@ class PlayerMetricForm(forms.ModelForm):
                 'placeholder': 'Enter metric value (e.g., 85.5)',
                 'step': '0.01',
                 'min': '0',
-                'oninput': 'validateNumeric(this)'
+                'onchange': 'validateNumeric(this)'
             }),
-            'ageCaptured': forms.Select(attrs={'class': 'form-control'}),
-            'dateCaptured': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'notes': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Optional notes about this metric...',
-                'maxlength': '500'
-            }),
+            'playerAge': forms.Select(attrs={'class': 'form-control'}),
         }
 
 
@@ -33,10 +23,10 @@ class CaptureForm(forms.Form):
     """Form for capturing multiple metrics at once"""
     
     # Common fields for all metrics
-    ageCaptured = forms.IntegerField(
-        widget=forms.Select(choices=[(i, str(i)) for i in range(12, 21)], attrs={'class': 'form-control'}),
-        label='Age Captured',
-        help_text='Select your age (12-20)'
+    gradClass = forms.IntegerField(
+        widget=forms.Select(choices=[("", "---------")] + [(i, str(i)) for i in range(12, 21)], attrs={'class': 'form-control'}),
+        label='Graduation Class',
+        help_text='Select your graduation class (2018-2032)'
     )
     dateCaptured = forms.DateField(
         widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -46,6 +36,7 @@ class CaptureForm(forms.Form):
     )
     capturedBy = forms.ChoiceField(
         choices=[
+            ("", "---------"),
             ('perfect_game', 'Perfect Game'),
             ('player_metrix', 'Player Metrix'),
             ('prep_baseball', 'Prep Baseball'),
@@ -85,14 +76,8 @@ class CaptureForm(forms.Form):
 
 
 class PlayerSignupForm(SignupForm):
-    position = forms.CharField(max_length=50, required=False)
-    graduation_year = forms.IntegerField(required=False)
-    
     def save(self, request):
         user = super().save(request)
-        user.player_profile.position = self.cleaned_data.get('position')
-        user.player_profile.graduation_year = self.cleaned_data.get('graduation_year')
-        user.player_profile.save()
         return user
 
 
@@ -101,13 +86,18 @@ class PlayerProfileForm(forms.ModelForm):
     last_name = forms.CharField(max_length=150, required=False)
     # Allow image upload in the form; will be saved to the model ImageField
     picture = forms.ImageField(required=False)
+    
+    positions = forms.MultipleChoiceField(
+        choices=PlayerProfile.POSITION_CHOICES,
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': '7'})
+    )
 
     class Meta:
         model = PlayerProfile
-        fields = ['first_name', 'last_name', 'position', 'team', 'school', 'graduation_year', 'height_inches', 'weight_lbs', 'city', 'state', 'throws', 'hits', 'picture', 'bio']
+        fields = ['first_name', 'last_name', 'team', 'school', 'graduation_year', 'height_inches', 'weight_lbs', 'city', 'state', 'throws', 'hits', 'picture', 'bio']
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 4}),
-            'position': forms.TextInput(attrs={'class': 'form-control'}),
             'team': forms.TextInput(attrs={'class': 'form-control'}),
             'school': forms.TextInput(attrs={'class': 'form-control'}),
             'graduation_year': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -129,9 +119,18 @@ class PlayerProfileForm(forms.ModelForm):
         if self.instance and self.instance.user:
             self.fields['first_name'].initial = self.instance.user.first_name
             self.fields['last_name'].initial = self.instance.user.last_name
+        # Set initial positions from the model instance
+        if self.instance and self.instance.positions:
+            self.fields['positions'].initial = self.instance.get_positions_list()
 
     def save(self, commit=True):
         profile = super().save(commit=False)
+        # Handle positions field
+        positions_data = self.cleaned_data.get('positions', [])
+        if positions_data:
+            profile.positions = ','.join(positions_data)
+        else:
+            profile.positions = None
         if profile.user:
             profile.user.first_name = self.cleaned_data['first_name']
             profile.user.last_name = self.cleaned_data['last_name']

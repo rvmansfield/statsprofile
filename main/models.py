@@ -28,12 +28,24 @@ class PlayerMetric(models.Model):
     metricType = models.CharField(max_length=20, choices=METRIC_TYPE_CHOICES, verbose_name='Metric Type')
     metric = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Metric')
     
-    # Restrict ages to 12-20 via choices; stored as integer
+      # Restrict ages to 12-20 via choices; stored as integer
     AGE_CHOICES = [(i, str(i)) for i in range(12, 21)]
-    ageCaptured = models.IntegerField(
+    playerAge = models.IntegerField(
         choices=AGE_CHOICES,
-        verbose_name='Age Captured',
-        validators=[MinValueValidator(12), MaxValueValidator(20)]
+        verbose_name='Player Age',
+        validators=[MinValueValidator(12), MaxValueValidator(20)],
+        default=18
+    )
+    
+    
+    
+    # Restrict grad classes via choices; stored as integer
+    CLASS_CHOICES = [(i, str(i)) for i in range(2018, 2032)]
+    gradClass = models.IntegerField(
+        choices=CLASS_CHOICES,
+        verbose_name='Graduation Class',
+        validators=[MinValueValidator(2018), MaxValueValidator(2032)],
+        default=2026
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='User', null=True, blank=True)
     dateCaptured = models.DateField(verbose_name='Date Captured', null=True, blank=True)
@@ -49,7 +61,7 @@ class PlayerMetric(models.Model):
     
     def __str__(self):
         username = self.user.username if self.user else 'Anonymous'
-        return f"{self.metricType} - {self.metric} (Age {self.ageCaptured}) - {username}"
+        return f"{self.metricType} - {self.metric} (GradClass {self.gradClass}) - {username}"
     
     class Meta:
         verbose_name = 'Player Metric'
@@ -112,6 +124,7 @@ class MetricsRange(models.Model):
         ('ofvelo', 'Outfield Velocity (mph)'),
         ('ifvelo', 'Infield Velocity (mph)'),
     ]
+    AGE_CHOICES = [(i, str(i)) for i in range(12, 21)]
     
     metricType = models.CharField(max_length=20, choices=METRIC_TYPE_CHOICES, verbose_name='Metric Type')
     Min = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Minimum Value')
@@ -132,7 +145,16 @@ class PlayerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='player_profile')
     
     # Player Info
-    position = models.CharField(max_length=50, blank=True, null=True)
+    POSITION_CHOICES = [
+        ('P', 'Pitcher'),
+        ('C', 'Catcher'),
+        ('1B', 'First Base'),
+        ('2B', 'Second Base'),
+        ('3B', 'Third Base'),
+        ('SS', 'Shortstop'),
+        ('OF', 'Outfield'),
+    ]
+    positions = models.CharField(max_length=200, blank=True, null=True, help_text='Comma-separated list of positions')
     team = models.CharField(max_length=100, blank=True, null=True)
     graduation_year = models.IntegerField(null=True, blank=True)
     
@@ -177,6 +199,20 @@ class PlayerProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def get_positions_list(self):
+        """Return positions as a list of position codes"""
+        if self.positions:
+            return [pos.strip() for pos in self.positions.split(',') if pos.strip()]
+        return []
+    
+    def get_positions_display(self):
+        """Return positions as a formatted string with display names"""
+        positions_list = self.get_positions_list()
+        if not positions_list:
+            return "Not set"
+        position_dict = dict(self.POSITION_CHOICES)
+        return ", ".join([position_dict.get(pos, pos) for pos in positions_list])
+    
     def __str__(self):
         return f"{self.user.username}'s Profile"
 

@@ -1,13 +1,16 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, Http404
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 from decimal import Decimal
 from .forms import PlayerMetricForm, CaptureForm, PlayerProfileForm
 from .models import PlayerMetric, MetricsHistory, MetricsRange
 import json
+
+User = get_user_model()
 
 # Create your views here.
 
@@ -31,18 +34,21 @@ def calculate_percentile(min_val, max_val, current_val):
 def results(request, metric_id):
     try:
         player_metric = PlayerMetric.objects.get(id=metric_id)
+
+        print('hello world')
+        print(player_metric.playerAge)
         
         # Get comparison data from MetricsRange for the same metric type and age
         comparison_data = []
         
         # Get the player's age for comparison
-        player_age = int(player_metric.ageCaptured)
+        playerAge = int(player_metric.playerAge)
         
-        # Try to get the metrics range for this metric type and age
+        # Try to get the metrics range for this metric type and graduation class
         try:
             metrics_range = MetricsRange.objects.get(
                 metricType=player_metric.metricType,
-                playerAge=player_age
+                playerAge=playerAge
             )
             
             comparison_data = {
@@ -51,7 +57,9 @@ def results(request, metric_id):
                 'average': metrics_range.Avg,
                 'current_value': player_metric.metric,
                 'metric_type_display': player_metric.get_metricType_display(),
-                'player_age': player_age,
+                'metric_type': player_metric.metricType,
+                'playerAge': player_metric.playerAge,
+                'player_age': player_metric.playerAge,
                 'has_data': True,
                 'percentile': calculate_percentile(metrics_range.Min, metrics_range.Max, player_metric.metric),
                 
@@ -60,10 +68,11 @@ def results(request, metric_id):
             print(comparison_data)
             
         except MetricsRange.DoesNotExist:
-            # No range data for this metric type and age
+            # No range data for this metric type and graduation class
             comparison_data = {
                 'no_data': True,
-                'player_age': player_age,
+                'playerAge': playerAge,
+                'player_age': playerAge,
                 'metric_type_display': player_metric.get_metricType_display()
             }
         
@@ -114,13 +123,13 @@ def metrics_history(request):
 
 
 @login_required
-def capture(request):
+def add(request):
     """View for capturing multiple metrics at once - requires login"""
     if request.method == 'POST':
         form = CaptureForm(request.POST)
         if form.is_valid():
             # Get common data
-            age_captured = form.cleaned_data['ageCaptured']
+            grad_class = form.cleaned_data['gradClass']
             user = request.user  # Always use the logged-in user (capture requires login)
             date_captured = form.cleaned_data.get('dateCaptured')
             captured_by = form.cleaned_data.get('capturedBy')
@@ -135,7 +144,7 @@ def capture(request):
                         PlayerMetric.objects.create(
                             metricType=metric_type,
                             metric=value,
-                            ageCaptured=age_captured,
+                            playerAge=form.cleaned_data.get('playerAge'),
                             user=user,
                             dateCaptured=date_captured,
                             capturedBy=captured_by,
@@ -147,7 +156,7 @@ def capture(request):
             
             if saved_count > 0:
                 messages.success(request, f'Successfully saved {saved_count} metric(s)!')
-                return redirect('capture')
+                return redirect('profile')
             else:
                 messages.warning(request, 'No metrics were saved. Please fill in at least one metric.')
         else:
@@ -155,17 +164,32 @@ def capture(request):
     else:
         form = CaptureForm()
     
-    return render(request, 'main/capture.html', {'form': form})
+    return render(request, 'main/add.html', {'form': form})
 
 
 @login_required
 def profile(request):
-    """View for displaying user profile with individual metric charts"""
-    user = request.user
-    player_profile = user.player_profile
+    """Redirect to username-based profile URL for logged-in users"""
+    return redirect('profile_by_username', username=request.user.username)
+
+
+def profile_by_username(request, username):
+    """View for displaying user profile by username - publicly accessible"""
+    profile_user = get_object_or_404(User, username=username)
     
-    # Get all metrics for the current user
-    user_metrics = PlayerMetric.objects.filter(user=user).order_by('dateCaptured')
+    # Get or create player profile (should exist due to signal, but handle edge case)
+    from .models import PlayerProfile
+    player_profile, created = PlayerProfile.objects.get_or_create(user=profile_user)
+    
+    # Get all metrics for the profile user, ordered by date for charts
+    user_metrics = PlayerMetric.objects.filter(user=profile_user).order_by('dateCaptured')
+    
+    # Get latest metrics for each type (ordered by date descending)
+    latest_metrics_query = PlayerMetric.objects.filter(user=profile_user).order_by('-dateCaptured', '-created_at')
+    latest_metrics = {}
+    for metric in latest_metrics_query:
+        if metric.metricType not in latest_metrics:
+            latest_metrics[metric.metricType] = metric
     
     # Initialize metric data containers
     metrics_data = {
@@ -188,11 +212,33 @@ def profile(request):
             metrics_data[metric.metricType]['values'].append(float(metric.metric))
             metrics_data[metric.metricType]['labels'].append(label)
     
+    # Calculate percentile for latest metric of each type
+    for metric_type, metric in latest_metrics.items():
+        player_age = int(metric.playerAge)
+        try:
+            metrics_range = MetricsRange.objects.get(
+                metricType=metric_type,
+                playerAge=player_age
+            )
+            percentile = calculate_percentile(metrics_range.Min, metrics_range.Max, metric.metric)
+            metrics_data[metric_type]['latest_value'] = float(metric.metric)
+            metrics_data[metric_type]['percentile'] = percentile
+            metrics_data[metric_type]['has_percentile'] = True
+            metrics_data[metric_type]['player_age'] = player_age
+        except MetricsRange.DoesNotExist:
+            metrics_data[metric_type]['latest_value'] = float(metric.metric)
+            metrics_data[metric_type]['has_percentile'] = False
+            metrics_data[metric_type]['player_age'] = player_age
+    
+    # Check if viewing own profile
+    is_own_profile = request.user.is_authenticated and request.user == profile_user
+    
     # Prepare context with JSON data for each metric
     context = {
-        'user': user,
+        'user': profile_user,
         'profile': player_profile,
         'total_metrics': user_metrics.count(),
+        'is_own_profile': is_own_profile,
         'metrics_data': {
             metric_type: {
                 'dates': json.dumps(data['dates']),
@@ -201,7 +247,12 @@ def profile(request):
                 'display': data['display'],
                 'unit': data['unit'],
                 'reverse': data['reverse'],
-                'has_data': len(data['dates']) > 0
+                'has_data': len(data['dates']) > 0,
+                'latest_value': data.get('latest_value'),
+                'percentile': data.get('percentile'),
+                'has_percentile': data.get('has_percentile', False),
+                'player_age': data.get('player_age'),
+                'metric_type': metric_type,
             }
             for metric_type, data in metrics_data.items()
         }
@@ -220,6 +271,9 @@ def evaluate(request):
                 form.instance.user = None  # Anonymous user
             player_metric = form.save()
             return redirect('results', metric_id=player_metric.id)
+        else:
+            # Form has errors, will be displayed in template
+            pass
     else:
         form = PlayerMetricForm()
     
@@ -237,3 +291,68 @@ def edit_profile(request):
         form = PlayerProfileForm(instance=request.user.player_profile)
     
     return render(request, 'main/edit_profile.html', {'form': form})
+
+
+@login_required
+def playerevaluation(request):
+    """View for comparing all user stats to averages - requires login"""
+    user = request.user
+    
+    # Get all metrics for the current user, ordered by date (most recent first)
+    user_metrics = PlayerMetric.objects.filter(user=user).order_by('-dateCaptured', '-created_at')
+    
+    # Get the latest metric for each metric type
+    latest_metrics = {}
+    for metric in user_metrics:
+        if metric.metricType not in latest_metrics:
+            latest_metrics[metric.metricType] = metric
+    
+    # Prepare comparison data for each metric type
+    evaluation_data = []
+    
+    for metric_type, metric in latest_metrics.items():
+        grad_class = int(metric.gradClass)
+        
+        # Try to get the metrics range for this metric type and graduation class
+        try:
+            metrics_range = MetricsRange.objects.get(
+                metricType=metric_type,
+                gradClass=grad_class
+            )
+            
+            percentile = calculate_percentile(metrics_range.Min, metrics_range.Max, metric.metric)
+            
+            evaluation_data.append({
+                'metric_type': metric_type,
+                'metric_type_display': metric.get_metricType_display(),
+                'current_value': metric.metric,
+                'min_value': metrics_range.Min,
+                'max_value': metrics_range.Max,
+                'average': metrics_range.Avg,
+                'grad_class': grad_class,
+                'percentile': percentile,
+                'has_data': True,
+                'date_captured': metric.dateCaptured,
+            })
+            
+        except MetricsRange.DoesNotExist:
+            # No range data for this metric type and graduation class
+            evaluation_data.append({
+                'metric_type': metric_type,
+                'metric_type_display': metric.get_metricType_display(),
+                'current_value': metric.metric,
+                'grad_class': grad_class,
+                'has_data': False,
+                'date_captured': metric.dateCaptured,
+            })
+    
+    # Sort by metric type for consistent display
+    evaluation_data.sort(key=lambda x: x['metric_type'])
+    
+    context = {
+        'user': user,
+        'evaluation_data': evaluation_data,
+        'total_metrics': len(evaluation_data),
+    }
+    
+    return render(request, 'main/playerevaluation.html', context)

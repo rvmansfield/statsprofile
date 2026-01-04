@@ -95,6 +95,30 @@
             height: 300px;
             margin: 20px 0;
         }
+        .percentile-badge {
+            text-align: center;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 1rem 0;
+            display: inline-block;
+            width: 100%;
+        }
+        .percentile-badge.low {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        }
+        .percentile-badge.medium {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+        .percentile-badge.high {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        .percentile-container {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
 {% endblock %}
 
 {% block content %}
@@ -133,14 +157,53 @@
                     </div>
                 </div>
                 
-                {% if comparison_data.percentile == 0 %}
-                    Your {{ comparison_data.metric_type_display }} is at or lower than the min value
-                {% elif comparison_data.percentile == 100 %}
-                    Your {{ comparison_data.metric_type_display }} is at or higher than the max value
-                
-                {% else %}
-                    A {{ comparison_data.metric_type_display }} of {{ comparison_data.current_value }} is in the <b>{{ comparison_data.percentile }}th</b> percentile of players in this age group. 
-                {% endif %}
+                <div class="percentile-container">
+                    {% if comparison_data.metric_type == '60' %}
+                        {% if comparison_data.percentile == 0 %}
+                            <div class="percentile-badge high">
+                                Faster than the range for age {{ comparison_data.player_age }}
+                            </div>
+                        {% elif comparison_data.percentile == 100 %}
+                            <div class="percentile-badge low">
+                                Slower than the range for age {{ comparison_data.player_age }}!
+                            </div>
+                        {% elif comparison_data.percentile >= 75 %}
+                            <div class="percentile-badge">
+                                {{ comparison_data.percentile }}th Percentile - Below Average
+                            </div>
+                        {% elif comparison_data.percentile >= 50 %}
+                            <div class="percentile-badge medium">
+                                {{ comparison_data.percentile }}th Percentile - Above Average
+                            </div>
+                        {% else %}
+                            <div class="percentile-badge high">
+                                {{ comparison_data.percentile }}th Percentile - Excellent! ⭐
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        {% if comparison_data.percentile == 0 %}
+                            <div class="percentile-badge low">
+                                At or below minimum for age {{ comparison_data.player_age }}
+                            </div>
+                        {% elif comparison_data.percentile == 100 %}
+                            <div class="percentile-badge">
+                                At or above maximum for age {{ comparison_data.player_age }}! 🎉
+                            </div>
+                        {% elif comparison_data.percentile >= 75 %}
+                            <div class="percentile-badge">
+                                {{ comparison_data.percentile }}th Percentile - Excellent! ⭐
+                            </div>
+                        {% elif comparison_data.percentile >= 50 %}
+                            <div class="percentile-badge medium">
+                                {{ comparison_data.percentile }}th Percentile - Above Average
+                            </div>
+                        {% else %}
+                            <div class="percentile-badge low">
+                                {{ comparison_data.percentile }}th Percentile - Below Average
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
 
                 
                 <canvas id="myChart" height="100"></canvas>
@@ -155,7 +218,9 @@
         {% endif %}
         
         <div class="text-center mt-4">
-            <a href="{% url 'index' %}" class="btn-back">Submit Another Metric</a>
+            <a class="btn btn-primary btn-sm px-3" href="{% url 'profile' %}">
+            Track Metrics in Profile
+          </a>
         </div>
     </div>
 {% endblock %}
@@ -172,6 +237,7 @@
             datasets: [
               {
                 label: 'Range',
+                
                 data: [{{ comparison_data.max_value|floatformat:1 }}],  // your "max" of the range
                 backgroundColor: 'rgba(75, 192, 192, 0.4)',
                 barPercentage: .8,
@@ -185,6 +251,11 @@
             indexAxis: 'y', // horizontal bar
             
             plugins: {
+              
+            
+                legend: {
+                    display: false
+                },
               annotation: {
                 annotations: {
                   marker: {

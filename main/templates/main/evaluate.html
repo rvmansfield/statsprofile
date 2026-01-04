@@ -64,7 +64,13 @@
     <div class="form-container">
         <h2 class="form-title">Player Statistics Input</h2>
         
-        <form method="post">
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+        
+        <form method="post" action="{% url 'evaluate' %}">
             {% csrf_token %}
             
             <div class="mb-3">
@@ -85,11 +91,11 @@
             </div>
             
             <div class="mb-3">
-                <label for="{{ form.ageCaptured.id_for_label }}" class="form-label">Age Captured</label>
-                {{ form.ageCaptured }}
+                <label for="{{ form.playerAge.id_for_label }}" class="form-label">Player Age</label>
+                {{ form.playerAge }}
                 <div class="numeric-hint">Select your age (12-20)</div>
-                {% if form.ageCaptured.errors %}
-                    <div class="text-danger">{{ form.ageCaptured.errors }}</div>
+                {% if form.playerAge.errors %}
+                    <div class="text-danger">{{ form.playerAge.errors }}</div>
                 {% endif %}
             </div>
             
@@ -105,6 +111,7 @@
         function validateNumeric(input) {
             // Remove any non-numeric characters except decimal point
             let value = input.value.replace(/[^0-9.]/g, '');
+            
             
             // Ensure only one decimal point
             let parts = value.split('.');
@@ -128,25 +135,61 @@
         // Add form validation on submit
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
+            if (!form) {
+                console.error('Form not found');
+                return;
+            }
+            
             form.addEventListener('submit', function(e) {
+                let hasErrors = false;
+                const errorMessages = [];
+                
+                const metricTypeInput = document.getElementById('{{ form.metricType.id_for_label }}');
                 const metricInput = document.getElementById('{{ form.metric.id_for_label }}');
-                const ageInput = document.getElementById('{{ form.ageCaptured.id_for_label }}');
+                const ageInput = document.getElementById('{{ form.playerAge.id_for_label }}');
+                
+                // Clear previous error states
+                if (metricTypeInput) metricTypeInput.classList.remove('is-invalid');
+                if (metricInput) metricInput.classList.remove('is-invalid');
+                if (ageInput) ageInput.classList.remove('is-invalid');
+                
+                // Validate metricType field
+                if (!metricTypeInput || !metricTypeInput.value || metricTypeInput.value === '') {
+                    e.preventDefault();
+                    hasErrors = true;
+                    if (metricTypeInput) {
+                        metricTypeInput.classList.add('is-invalid');
+                    }
+                    errorMessages.push('Please select a metric type.');
+                }
                 
                 // Validate metric field
-                if (metricInput.value === '' || isNaN(metricInput.value) || parseFloat(metricInput.value) < 0) {
+                if (!metricInput || metricInput.value === '' || isNaN(metricInput.value) || parseFloat(metricInput.value) < 0) {
                     e.preventDefault();
-                    metricInput.classList.add('is-invalid');
-                    alert('Please enter a valid numeric value for the metric.');
-                    return false;
+                    hasErrors = true;
+                    if (metricInput) {
+                        metricInput.classList.add('is-invalid');
+                    }
+                    errorMessages.push('Please enter a valid numeric value for the metric.');
                 }
                 
                 // Validate age field (must be selected)
-                if (!ageInput.value) {
+                if (!ageInput || !ageInput.value || ageInput.value === '') {
                     e.preventDefault();
-                    ageInput.classList.add('is-invalid');
-                    alert('Please select an age between 12 and 20.');
+                    hasErrors = true;
+                    if (ageInput) {
+                        ageInput.classList.add('is-invalid');
+                    }
+                    errorMessages.push('Please select an age between 12 and 20.');
+                }
+                
+                if (hasErrors) {
+                    alert('Please correct the following errors:\n\n' + errorMessages.join('\n'));
                     return false;
                 }
+                
+                // If validation passes, allow form to submit
+                console.log('Form validation passed, submitting...');
             });
         });
     </script>
