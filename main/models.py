@@ -20,9 +20,9 @@ class PlayerMetric(models.Model):
     ]
     
     CAPTURED_BY_CHOICES = [
-        ('perfect_game', 'Perfect Game'),
-        ('player_metrix', 'Player Metrix'),
-        ('self_captured', 'Self Captured'),
+        ('Perfect Game', 'Perfect Game'),
+        ('Player Metrix', 'Player Metrix'),
+        ('Self Captured', 'Self Captured'),
     ]
     
     metricType = models.CharField(max_length=20, choices=METRIC_TYPE_CHOICES, verbose_name='Metric Type')
@@ -33,8 +33,7 @@ class PlayerMetric(models.Model):
     playerAge = models.IntegerField(
         choices=AGE_CHOICES,
         verbose_name='Player Age',
-        validators=[MinValueValidator(12), MaxValueValidator(20)],
-        default=18
+        validators=[MinValueValidator(12), MaxValueValidator(20)]
     )
     
     

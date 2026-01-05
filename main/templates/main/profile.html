@@ -64,6 +64,42 @@
         color: #6c757d;
         padding: 2rem;
     }
+    .percentile-badge {
+        text-align: center;
+        padding: 0.5rem 0.75rem;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 18pt;
+        margin-top: 1rem;
+        display: inline-block;
+    }
+    .percentile-badge.low {
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    }
+    .percentile-badge.medium {
+        background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    }
+    .percentile-badge.high {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    .metric-rank-info {
+        text-align: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e9ecef;
+    }
+    .latest-value {
+        font-size: 40pt;
+        font-weight: bold;
+        color: #000000;
+    }
+
+    .latest-value-date {
+        font-size: 14pt;
+        color: #000000;
+    }
 
     
 {% endblock %}
@@ -92,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 maintainAspectRatio: false,
                 plugins: {
                     title: {
-                        display: true,
+                        display: false,
                         text: '{{ data.display }} Progress'
                     },
                     tooltip: {
@@ -126,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     x: {
                         title: {
-                            display: true,
+                            display: false,
                             text: 'Date'
                         },
                         ticks: {
@@ -140,6 +176,69 @@ document.addEventListener('DOMContentLoaded', function() {
         {% endif %}
     {% endfor %}
 });
+
+// Share profile functionality
+function copyProfileUrl() {
+    const url = window.location.href;
+    const shareBtn = document.getElementById('share-btn');
+    const shareBtnText = document.getElementById('share-btn-text');
+    
+    // Use the Clipboard API if available
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url).then(function() {
+            // Show success feedback
+            shareBtnText.textContent = 'Copied!';
+            shareBtn.classList.remove('btn-secondary');
+            shareBtn.classList.add('btn-success');
+            
+            // Reset after 2 seconds
+            setTimeout(function() {
+                shareBtnText.textContent = 'Share Profile';
+                shareBtn.classList.remove('btn-success');
+                shareBtn.classList.add('btn-secondary');
+            }, 2000);
+        }).catch(function(err) {
+            // Fallback to older method if clipboard API fails
+            fallbackCopyTextToClipboard(url, shareBtn, shareBtnText);
+        });
+    } else {
+        // Fallback for older browsers or non-secure contexts
+        fallbackCopyTextToClipboard(url, shareBtn, shareBtnText);
+    }
+}
+
+// Fallback method for copying text
+function fallbackCopyTextToClipboard(text, btn, btnText) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            btnText.textContent = 'Copied!';
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-success');
+            
+            setTimeout(function() {
+                btnText.textContent = 'Share Profile';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-secondary');
+            }, 2000);
+        } else {
+            alert('Failed to copy URL. Please copy manually: ' + text);
+        }
+    } catch (err) {
+        alert('Failed to copy URL. Please copy manually: ' + text);
+    }
+    
+    document.body.removeChild(textArea);
+}
 </script>
 {% endblock %}
 
@@ -148,17 +247,26 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="row">
     <!-- Column 1: spans all 5 rows -->
     <div class="col-md-4 ">
-      <div class="p-3 bg-white border h-100">
-        <h1>{{ user.get_full_name|default:user.username }}</h1>
-        <img src="{{ profile.picture.url }}" alt="{{ user.username }} picture" style="max-width:150px;border-radius:8px;" />
+      <div class="p-3 bg-white border h-100 d-flex flex-column align-items-center">
+        <h1 class="text-center mb-3">{{ user.get_full_name|default:user.username }}</h1>
+        <img src="{{ profile.picture.url }}" alt="{{ user.username }} picture" class="img-fluid mb-3" style="max-width:250px; max-height:300px; border-radius:8px;" />
         
         {% if profile.bio %}
-        <div class="bio-section mt-4">
+        <div class="bio-section text-center mb-4 w-100">
             <hr>
             <p>{{ profile.bio }}</p>
         </div>
         {% endif %}
-        <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+        <div class="w-100 d-flex flex-column align-items-center mt-auto">
+          {% if is_own_profile %}
+          <a href="{% url 'edit_profile' %}" class="btn btn-primary w-100 mb-2">Edit Profile</a>
+          <a href="{% url 'add' %}" class="btn btn-primary w-100 mb-2">Add Metrics</a>
+          {% endif %}
+          <a href="{% url 'playerevaluation' %}" class="btn btn-primary w-100 mb-2">Evaluation Tool</a>
+          <button id="share-btn" class="btn btn-secondary w-100" onclick="copyProfileUrl()">
+              <span id="share-btn-text">Share Profile</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -166,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-md-8">
       <div class="row">
         <div class="col-md-6 p-3 bg-white border"><div class="label">Positions</div>
-                <div class="value">{{ profile.position|default:"Not set" }}</div></div>
+                <div class="value">{{ profile.get_positions_display }}</div></div>
         <div class="col-md-6 p-3 bg-white border"><div class="label">Team</div>
                 <div class="value">{{ profile.team|default:"Not set" }}</div></div>
 
@@ -226,6 +334,60 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="chart-wrapper">
                         <canvas id="chart_{{ metric_type }}"></canvas>
                     </div>
+                    {% if data.latest_value %}
+                        <div class="metric-rank-info">
+                            <div class="latest-value">{{ data.latest_value|floatformat:1 }} {{ data.unit }}</div>
+                            <div class="latest-value-date">Captured on {{ data.date_captured }}</div>
+                            {% if data.has_percentile %}
+                                
+                                {% if metric_type == '60' %}
+                                    {% if data.percentile == 0 %}
+                                        <div class="percentile-badge high">
+                                            Faster than the range for age {{ data.player_age }}
+                                        </div>
+                                    {% elif data.percentile == 100 %}
+                                        <div class="percentile-badge low">
+                                            Slower than the range for age {{ data.player_age }}!
+                                        </div>
+                                    {% elif data.percentile >= 75 %}
+                                        <div class="percentile-badge">
+                                            {{ data.percentile }}th Percentile - Below Average
+                                        </div>
+                                    {% elif data.percentile >= 50 %}
+                                        <div class="percentile-badge medium">
+                                            {{ data.percentile }}th Percentile - Above Average
+                                        </div>
+                                    {% else %}
+                                        <div class="percentile-badge high">
+                                            {{ data.percentile }}th Percentile - Excellent! ⭐
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    {% if data.percentile == 0 %}
+                                        <div class="percentile-badge low">
+                                            At or below minimum for age {{ data.player_age }}
+                                        </div>
+                                    {% elif data.percentile == 100 %}
+                                        <div class="percentile-badge high">
+                                            At or above maximum for age {{ data.player_age }}! 🎉
+                                        </div>
+                                    {% elif data.percentile >= 75 %}
+                                        <div class="percentile-badge">
+                                            {{ data.percentile }}th Percentile - Excellent! ⭐
+                                        </div>
+                                    {% elif data.percentile >= 50 %}
+                                        <div class="percentile-badge medium">
+                                            {{ data.percentile }}th Percentile - Above Average
+                                        </div>
+                                    {% else %}
+                                        <div class="percentile-badge low">
+                                            {{ data.percentile }}th Percentile - Below Average
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 {% else %}
                     <div class="no-data-message">
                         No {{ data.display|lower }} metrics recorded yet
@@ -234,5 +396,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         {% endfor %}
     </div>
+
+
+   
+
 
 {% endblock %}

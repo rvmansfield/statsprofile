@@ -23,10 +23,10 @@ class CaptureForm(forms.Form):
     """Form for capturing multiple metrics at once"""
     
     # Common fields for all metrics
-    gradClass = forms.IntegerField(
+    playerAge = forms.IntegerField(
         widget=forms.Select(choices=[("", "---------")] + [(i, str(i)) for i in range(12, 21)], attrs={'class': 'form-control'}),
-        label='Graduation Class',
-        help_text='Select your graduation class (2018-2032)'
+        label='Player Age',
+        help_text='Select player age'
     )
     dateCaptured = forms.DateField(
         widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -37,10 +37,10 @@ class CaptureForm(forms.Form):
     capturedBy = forms.ChoiceField(
         choices=[
             ("", "---------"),
-            ('perfect_game', 'Perfect Game'),
-            ('player_metrix', 'Player Metrix'),
-            ('prep_baseball', 'Prep Baseball'),
-            ('self_captured', 'Self Captured'),
+            ('Perfect Game', 'Perfect Game'),
+            ('Player Metrix', 'Player Metrix'),
+            ('Prep Baseball', 'Prep Baseball'),
+            ('Self Captured', 'Self Captured'),
         ],
         widget=forms.Select(attrs={'class': 'form-control'}),
         label='Captured By',

@@ -1,0 +1,237 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Player Evaluation{% endblock %}
+
+{% block extra_css %}
+    .evaluation-container {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .evaluation-title {
+        text-align: center;
+        color: #333;
+        margin-bottom: 2rem;
+        font-weight: 600;
+    }
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .metric-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        border-left: 4px solid #0d6efd;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .metric-header {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        text-align: center;
+    }
+    .comparison-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .stat-item {
+        text-align: center;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 8px;
+    }
+    .stat-value {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #0d6efd;
+        margin-bottom: 0.25rem;
+    }
+    .stat-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .percentile-badge {
+        text-align: center;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+    .percentile-badge.low {
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    }
+    .percentile-badge.medium {
+        background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    }
+    .no-data-message {
+        text-align: center;
+        color: #6c757d;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        font-style: italic;
+    }
+    .date-captured {
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+    .btn-back {
+        background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 12px 30px;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        color: white;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+{% endblock %}
+
+{% block content %}
+    <div class="evaluation-container">
+        <h2 class="evaluation-title">Player Evaluation</h2>
+        <p class="text-center text-muted mb-4">Compare your latest stats to age group averages</p>
+        
+        {% if evaluation_data %}
+            <div class="metrics-grid">
+                {% for metric in evaluation_data %}
+                    <div class="metric-card">
+                        <h3 class="metric-header">{{ metric.metric_type_display }}</h3>
+                        
+                        {% if metric.has_data %}
+                            <div class="comparison-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ metric.current_value|floatformat:1 }}</div>
+                                    <div class="stat-label">Your Value</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ metric.average|floatformat:1 }}</div>
+                                    <div class="stat-label">Age {{ metric.player_age }} Avg</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ metric.min_value|floatformat:1 }}</div>
+                                    <div class="stat-label">Age {{ metric.player_age }} Min</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">{{ metric.max_value|floatformat:1 }}</div>
+                                    <div class="stat-label">Age {{ metric.player_age }} Max</div>
+                                </div>
+                            </div>
+                            {% if metric.metric_type == '60' %}
+                                        {% if metric.percentile == 0 %}
+                                        <div class="percentile-badge high">
+                                            Faster than the range for age {{ metric.player_age }}
+                                        </div>
+                                    {% elif metric.percentile == 100 %}
+                                        <div class="percentile-badge low">
+                                            Slower than the range for age {{ metric.player_age }}!
+                                        </div>
+                                    {% elif metric.percentile >= 75 %}
+                                        <div class="percentile-badge">
+                                            {{ metric.percentile }}th Percentile - Below Average
+                                        </div>
+                                    {% elif metric.percentile >= 50 %}
+                                        <div class="percentile-badge medium">
+                                            {{ metric.percentile }}th Percentile - Above Average
+                                        </div>
+                                    {% else %}
+                                        <div class="percentile-badge high">
+                                            {{ metric.percentile }}th Percentile - Excellent! ⭐
+                                        </div>
+                                    {% endif %}
+
+                            {% else %}
+
+                        {% if metric.percentile == 0 %}
+                                    <div class="percentile-badge low">
+                                        At or below minimum for age {{ metric.player_age }}
+                                    </div>
+                                {% elif metric.percentile == 100 %}
+                                    <div class="percentile-badge">
+                                        At or above maximum for age {{ metric.player_age }}! 🎉
+                                    </div>
+                                {% elif metric.percentile >= 75 %}
+                                    <div class="percentile-badge">
+                                        {{ metric.percentile }}th Percentile - Excellent! ⭐
+                                    </div>
+                                {% elif metric.percentile >= 50 %}
+                                    <div class="percentile-badge medium">
+                                        {{ metric.percentile }}th Percentile - Above Average
+                                    </div>
+                                {% else %}
+                                    <div class="percentile-badge low">
+                                        {{ metric.percentile }}th Percentile - Below Average
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+
+
+                            
+                            
+                            {% if metric.date_captured %}
+                                <div class="date-captured">
+                                    Captured: {{ metric.date_captured|date:"M d, Y" }}
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="no-data-message">
+                                <p>No comparison data available for age {{ metric.player_age }} players.</p>
+                                <p>You're the first to submit this metric for your age group!</p>
+                                {% if metric.date_captured %}
+                                    <div class="date-captured">
+                                        Captured: {{ metric.date_captured|date:"M d, Y" }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <h3>No Metrics Found</h3>
+                <p>You haven't recorded any metrics yet. Start tracking your performance to see how you compare!</p>
+                <a href="{% url 'add' %}" class="btn-back mt-3">Add Metrics</a>
+            </div>
+        {% endif %}
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'profile_by_username' username=user.username %}" class="btn-back">Back to Profile</a>
+        </div>
+    </div>
+{% endblock %}
+

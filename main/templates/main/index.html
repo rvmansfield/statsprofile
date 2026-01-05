@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}Stats Profile - Input Form{% endblock %}
+{% block title %}Stats Profile{% endblock %}
 
 {% block extra_css %}
         .hero-section {
@@ -162,45 +162,42 @@
         </div>
         <div class="hero-tagline">
             <h1>Your Path to the Next Level Starts Here.</h1>
-            <p>Track your performance, analyze your progress, and elevate your game with comprehensive player statistics.</p>
+            <p>Track your metrics and see how they compare to other players.</p>
             <br>
             <p>Check out our <a href="{% url 'evaluate' %}">Evaluation Tool</a> and see how you stack up!</p>
             
         </div>
     </div>
-    <div class="px-4 pt-5 my-5 text-center">
-        <h1 class="display-4 fw-bold text-body-emphasis">
-          Centered screenshot
-        </h1>
-        <div class="col-lg-6 mx-auto">
-          <p class="lead mb-4">
-            Quickly design and customize responsive mobile-first sites with
-            Bootstrap, the world’s most popular front-end open source toolkit,
-            featuring Sass variables and mixins, responsive grid system,
-            extensive prebuilt components, and powerful JavaScript plugins.
-          </p>
-          <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
-            <button type="button" class="btn btn-primary btn-lg px-4 me-sm-3">
-              Primary button
-            </button>
-            <button type="button" class="btn btn-outline-secondary btn-lg px-4">
-              Secondary
-            </button>
+    <div class="px-4 pt-4 my-4">
+        <div class="row align-items-center g-5">
+      
+          <!-- LEFT: Content -->
+          <div class="col-lg-4 text-center text-lg-start">
+            <h2 class="text-center">
+              Create your player profile and start tracking your statistics.
+            </h2>
+            <div class="d-flex justify-content-center">
+                <a class="btn btn-primary btn-lg px-4" href="{% url 'profile' %}">
+                  Go to Profile
+                </a>
+              </div>
           </div>
-        </div>
-        <div class="overflow-hidden" style="max-height: 30vh">
-          <div class="container px-5">
+      
+          <!-- RIGHT: Image -->
+          <div class="col-lg-8 text-center">
             <img
               src="{% static 'main/images/homeprofile.png' %}"
-              class="img-fluid border rounded-3 shadow-lg mb-4"
+              class="img-fluid border shadow-lg"
               alt="Example image"
-              width="900"
-              height="700"
+              width="800"
+              height="500"
               loading="lazy"
             />
           </div>
+      
         </div>
       </div>
+      
 
     <div class="container px-4 py-5" id="hanging-icons">
         

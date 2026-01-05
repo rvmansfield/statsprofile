@@ -1,3 +1,4 @@
+{% load static %}
 {% load allauth socialaccount %}
 {% get_providers as socialaccount_providers %}
 {% if socialaccount_providers %}
@@ -10,9 +11,25 @@
                     {% endelement %}
                 {% endfor %}
             {% endif %}
-            {% provider_login_url provider process=process scope=scope auth_params=auth_params as href %}
-            {% element provider name=provider.name provider_id=provider.id href=href %}
-            {% endelement %}
+                {% comment %}
+                    {% provider_login_url provider process=process scope=scope auth_params=auth_params as href %}
+                    {% element provider name=provider.name provider_id=provider.id href=href %}
+                    {% endelement %}
+                {% endcomment %}
+                   
+                        <a
+                        title="{{ provider.name }}"
+                        class="socialaccount_provider {{ provider.id }}"
+                        href="{% provider_login_url provider.id process=process %}"
+                        >
+                        <img
+                            src="{% static 'main/images/social/'|add:provider.id|add:'.png' %}"
+                            alt="Sign in with {{ provider.name }}"
+                            style="height:40px;"
+                        >
+                        </a>
+                   
+
         {% endfor %}
     {% endelement %}
 {% endif %}

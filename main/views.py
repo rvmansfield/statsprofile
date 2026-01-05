@@ -129,7 +129,7 @@ def add(request):
         form = CaptureForm(request.POST)
         if form.is_valid():
             # Get common data
-            grad_class = form.cleaned_data['gradClass']
+            player_age = form.cleaned_data['playerAge']
             user = request.user  # Always use the logged-in user (capture requires login)
             date_captured = form.cleaned_data.get('dateCaptured')
             captured_by = form.cleaned_data.get('capturedBy')
@@ -193,7 +193,7 @@ def profile_by_username(request, username):
     
     # Initialize metric data containers
     metrics_data = {
-        '60': {'dates': [], 'values': [], 'labels': [], 'display': '60 Yard Dash', 'unit': 'seconds', 'reverse': True},
+        '60': {'dates': [], 'values': [], 'labels': [], 'display': '60 Yard Dash', 'unit': 'seconds', 'reverse': False},
         'fbvelo': {'dates': [], 'values': [], 'labels': [], 'display': 'Fastball Velocity', 'unit': 'mph', 'reverse': False},
         'exitvelo': {'dates': [], 'values': [], 'labels': [], 'display': 'Exit Velocity', 'unit': 'mph', 'reverse': False},
         'ofvelo': {'dates': [], 'values': [], 'labels': [], 'display': 'Outfield Velocity', 'unit': 'mph', 'reverse': False},
@@ -222,11 +222,13 @@ def profile_by_username(request, username):
             )
             percentile = calculate_percentile(metrics_range.Min, metrics_range.Max, metric.metric)
             metrics_data[metric_type]['latest_value'] = float(metric.metric)
+            metrics_data[metric_type]['date_captured'] = metric.dateCaptured.strftime('%m/%d/%Y') if metric.dateCaptured else 'N/A'
             metrics_data[metric_type]['percentile'] = percentile
             metrics_data[metric_type]['has_percentile'] = True
             metrics_data[metric_type]['player_age'] = player_age
         except MetricsRange.DoesNotExist:
             metrics_data[metric_type]['latest_value'] = float(metric.metric)
+            metrics_data[metric_type]['date_captured'] = metric.dateCaptured.strftime('%Y-%m-%d') if metric.dateCaptured else 'N/A'
             metrics_data[metric_type]['has_percentile'] = False
             metrics_data[metric_type]['player_age'] = player_age
     
@@ -249,6 +251,7 @@ def profile_by_username(request, username):
                 'reverse': data['reverse'],
                 'has_data': len(data['dates']) > 0,
                 'latest_value': data.get('latest_value'),
+                'date_captured': data.get('date_captured'),
                 'percentile': data.get('percentile'),
                 'has_percentile': data.get('has_percentile', False),
                 'player_age': data.get('player_age'),
