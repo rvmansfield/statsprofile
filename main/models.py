@@ -192,9 +192,10 @@ class PlayerProfile(models.Model):
         ('DC', 'District of Columbia')
     ]
     state = models.CharField(max_length=2, choices=STATE_CHOICES, blank=True, null=True)
+    
 
     # Picture stored using Django ImageField (uploaded to MEDIA_ROOT/player_pics/...)
-    picture = models.ImageField(upload_to='player_pics/%Y/%m/%d/', blank=True, null=True,default="player_pics/default.jpg")
+    picture = models.ImageField(upload_to='player_pics/', blank=True, null=True,default="player_pics/default.jpg")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

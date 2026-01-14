@@ -248,8 +248,8 @@ function fallbackCopyTextToClipboard(text, btn, btnText) {
     <!-- Column 1: spans all 5 rows -->
     <div class="col-md-4 ">
       <div class="p-3 bg-white border h-100 d-flex flex-column align-items-center">
-        <h1 class="text-center mb-3">{{ user.get_full_name|default:user.username }}</h1>
-        <img src="{{ profile.picture.url }}" alt="{{ user.username }} picture" class="img-fluid mb-3" style="max-width:250px; max-height:300px; border-radius:8px;" />
+        <h2 class="text-center mb-3">{{ user.get_full_name|default:user.username }}</h2>
+        <img src="{{ profile.picture.url }}" alt="{{ user.username }} picture" class="img-fluid mb-3" style="max-width:250px; max-height:200px; border-radius:8px;" />
         
         {% if profile.bio %}
         <div class="bio-section text-center mb-4 w-100">
@@ -257,12 +257,12 @@ function fallbackCopyTextToClipboard(text, btn, btnText) {
             <p>{{ profile.bio }}</p>
         </div>
         {% endif %}
-        <div class="w-100 d-flex flex-column align-items-center mt-auto">
+        <div class="w-60 d-flex flex-column align-items-center mt-auto">
           {% if is_own_profile %}
-          <a href="{% url 'edit_profile' %}" class="btn btn-primary w-100 mb-2">Edit Profile</a>
-          <a href="{% url 'add' %}" class="btn btn-primary w-100 mb-2">Add Metrics</a>
+          <a href="{% url 'edit_profile' %}" class="btn btn-primary w-100 mb-1">Edit Profile</a>
+          <a href="{% url 'add' %}" class="btn btn-primary w-100 mb-1">Add Metrics</a>
           {% endif %}
-          <a href="{% url 'playerevaluation' %}" class="btn btn-primary w-100 mb-2">Evaluation Tool</a>
+          <a href="{% url 'playerevaluation' %}" class="btn btn-primary w-100 mb-1">Evaluation Tool</a>
           <button id="share-btn" class="btn btn-secondary w-100" onclick="copyProfileUrl()">
               <span id="share-btn-text">Share Profile</span>
           </button>
@@ -314,16 +314,6 @@ function fallbackCopyTextToClipboard(text, btn, btnText) {
   </div>
 </div>
 
-
-
-
-
-
-
-
-    
-
-    
 
 
     <div class="charts-grid">
