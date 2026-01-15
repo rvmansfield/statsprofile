@@ -249,8 +249,13 @@ function fallbackCopyTextToClipboard(text, btn, btnText) {
     <div class="col-md-4 ">
       <div class="p-3 bg-white border h-100 d-flex flex-column align-items-center">
         <h2 class="text-center mb-3">{{ user.get_full_name|default:user.username }}</h2>
+        <!--
         <img src="{{ profile.picture.url }}" alt="{{ user.username }} picture" class="img-fluid mb-3" style="max-width:250px; max-height:200px; border-radius:8px;" />
-        
+        -->
+
+        <img src="{{ model.image.url }}" alt="{{ user.username }} picture" class="img-fluid mb-3" style="max-width:250px; max-height:200px; border-radius:8px;" />
+
+
         {% if profile.bio %}
         <div class="bio-section text-center mb-4 w-100">
             <hr>

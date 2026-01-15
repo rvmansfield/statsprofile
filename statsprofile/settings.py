@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'storages'
 ]
 
 
@@ -208,8 +209,26 @@ ACCOUNT_EMAIL_VERIFICATION = "optional"
 #ACCOUNT_USERNAME_REQUIRED = False
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'  # or os.path.join(BASE_DIR, 'media') if not using pathlib
+
+
+if not DEBUG:
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    AWS_ACCESS_KEY_ID = os.environ.get("AKIA6ODU362JBVQKD22R")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("evTe7PKf1XNz9pSib8jOIxa4NP91VydxBrNzPbm")
+
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("statsprofilemedia")
+    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "us-east-1")
+
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+
+else:
+    MEDIA_URL = '/media/'
+    #MEDIA_ROOT = BASE_DIR / 'media'  # or os.path.join(BASE_DIR, 'media') if not using pathlib
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
