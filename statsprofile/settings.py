@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import dj_database_url 
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 from pathlib import Path
 
@@ -23,13 +25,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-7kfi0v$v=!k7^4!04@qe!#kb9m7q94z=kzx_3rz570*6^5r_ty'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv("DEBUG")
 
 ALLOWED_HOSTS = ['*']
-
+    
 
 # Application definition
 
@@ -116,7 +118,7 @@ WSGI_APPLICATION = 'statsprofile.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://statuser:statpass@localhost:5432/statsprofile',
+        default=os.getenv("DB_URL"),
         conn_max_age=600
     )
 }
@@ -214,10 +216,10 @@ ACCOUNT_EMAIL_VERIFICATION = "optional"
 if not DEBUG:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-    AWS_ACCESS_KEY_ID = os.environ.get("AKIA6ODU362JBVQKD22R")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("evTe7PKf1XNz9pSib8jOIxa4NP91VydxBrNzPbm")
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
-    AWS_STORAGE_BUCKET_NAME = os.environ.get("statsprofilemedia")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "us-east-1")
 
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
@@ -226,8 +228,9 @@ if not DEBUG:
 
 else:
     MEDIA_URL = '/media/'
-    #MEDIA_ROOT = BASE_DIR / 'media'  # or os.path.join(BASE_DIR, 'media') if not using pathlib
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_ROOT = BASE_DIR / 'media'  # or os.path.join(BASE_DIR, 'media') if not using pathlib
+    #MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    print("Using local media storage")
 
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
@@ -237,8 +240,8 @@ SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'FETCH_USERINFO' : True,
         'APP': {
-            'client_id': '877955826378-ah0ra2v5q1obia9o7vqlkb1setjq2vbo.apps.googleusercontent.com',
-            'secret': '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',
+            'client_id': os.getenv("GOOGLE_CLIENT_ID"),
+            'secret': os.getenv("GOOGLE_CLIENT_SECRET"),
             'key': ''
         }
     }
