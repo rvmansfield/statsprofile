@@ -222,6 +222,7 @@ if not DEBUG:
 
     AWS_QUERYSTRING_AUTH = False  # public URLs
     AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_ADDRESSING_STYLE = 'virtual'  # or 'path' if virtual fails
 
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
     print("Using AWS media storage")
