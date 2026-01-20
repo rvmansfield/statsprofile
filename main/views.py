@@ -9,8 +9,10 @@ from decimal import Decimal
 from .forms import PlayerMetricForm, CaptureForm, PlayerProfileForm
 from .models import PlayerMetric, MetricsHistory, MetricsRange
 import json
+import logging
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -287,9 +289,28 @@ def edit_profile(request):
     if request.method == 'POST':
         form = PlayerProfileForm(request.POST, request.FILES, instance=request.user.player_profile)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Profile updated successfully!')
-            return redirect('profile')
+            try:
+                form.save()
+                messages.success(request, 'Profile updated successfully!')
+                logger.info(f"Profile updated successfully for user: {request.user.username}")
+                return redirect('profile')
+            except Exception as e:
+                # Log the full exception for debugging
+                logger.error(f"Error uploading profile for user {request.user.username}: {str(e)}", exc_info=True)
+                
+                # Check if it's an S3 error
+                if 'S3' in str(type(e).__name__) or 'ClientError' in str(type(e).__name__):
+                    messages.error(request, 'Failed to upload image to storage. Please check file size and format. If the problem persists, contact support.')
+                    logger.error(f"S3 ClientError for user {request.user.username}: {str(e)}")
+                elif 'IOError' in str(type(e).__name__) or 'OSError' in str(type(e).__name__):
+                    messages.error(request, 'File system error occurred. Please try again.')
+                    logger.error(f"File system error for user {request.user.username}: {str(e)}")
+                else:
+                    messages.error(request, 'An error occurred while updating your profile. Please try again.')
+                    logger.error(f"Unexpected error for user {request.user.username}: {str(e)}")
+        else:
+            messages.error(request, 'Please correct the errors below.')
+            logger.warning(f"Form validation failed for user {request.user.username}: {form.errors}")
     else:
         form = PlayerProfileForm(instance=request.user.player_profile)
     
