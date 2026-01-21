@@ -216,7 +216,7 @@ ACCOUNT_EMAIL_VERIFICATION = "optional"
 #ACCOUNT_USERNAME_REQUIRED = False
 
 
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+#DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 if not DEBUG:
     
@@ -239,7 +239,7 @@ if not DEBUG:
     print("Using AWS media storage")
 
 else:
-    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+    #DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'  # or os.path.join(BASE_DIR, 'media') if not using pathlib
     #MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
