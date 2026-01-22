@@ -161,6 +161,19 @@ USE_I18N = True
 USE_TZ = True
 
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/' 
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Force email verification
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "optional"
+
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -174,41 +187,6 @@ STORAGES = {
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-#STATIC_URL = 'static/'
-
-# Additional locations of static files
-#STATICFILES_DIRS = [
-#    BASE_DIR / 'static',
-#]
-
-# Directory where static files will be collected for production
-#STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/' 
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-# Force email verification
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "optional"
-
-# Optional but recommended
-#ACCOUNT_CONFIRM_EMAIL_ON_GET = True   # Automatically confirm email via link
-#ACCOUNT_AUTHENTICATION_METHOD = 'email'  # Login via email instead of username
-#ACCOUNT_USERNAME_REQUIRED = False
 
 
 # ================================
@@ -226,7 +204,11 @@ if not DEBUG:
     AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "us-east-1")
 
     AWS_QUERYSTRING_AUTH = False
-    AWS_DEFAULT_ACL = "public-read"
+    #AWS_DEFAULT_ACL = "public-read"
+    AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=86400",
+}
+
 
     AWS_S3_CUSTOM_DOMAIN = (
         f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
@@ -237,9 +219,7 @@ if not DEBUG:
 
 
 if DEBUG:
-    STORAGES["default"] = {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    }
+    
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 
