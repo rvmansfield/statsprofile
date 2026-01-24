@@ -194,8 +194,8 @@ class PlayerProfile(models.Model):
     state = models.CharField(max_length=2, choices=STATE_CHOICES, blank=True, null=True)
     
 
-    # Picture stored using Django ImageField (uploaded to MEDIA_ROOT/player_pics/...)
-    picture = models.ImageField(upload_to='player_pics/', blank=True, null=True,default="player_pics/default.jpg")
+    # Picture stored using Django ImageField (uploaded to MEDIA_ROOT/mediaplayer_pics/...)
+    picture = models.ImageField(upload_to='media/player_pics/', blank=True, null=True,default="media/player_pics/default.jpg")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
