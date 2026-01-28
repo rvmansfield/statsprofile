@@ -164,15 +164,15 @@
             <h1>Your Path to the Next Level Starts Here.</h1>
             <p>Track your metrics and see how they compare to other players.</p>
             <br>
-            <p>Check out our <a href="{% url 'evaluate' %}">Evaluation Tool</a> and see how you stack up!</p>
+            <p>Check out our <a class="btn btn-primary" href="{% url 'evaluate' %}">Evaluation Tool</a> and see how you stack up!</p>
             
         </div>
     </div>
-    <div class="px-4 pt-4 my-4">
+    <div class="col-12 col-md-8 mx-auto mw-100 px-4 pt-4 my-4">
         <div class="row align-items-center g-5">
       
           <!-- LEFT: Content -->
-          <div class="col-lg-4 text-center text-lg-start">
+          <div class="col-lg-6 text-center text-lg-start">
             <h2 class="text-center">
               Create your player profile and start tracking your statistics.
             </h2>
@@ -184,59 +184,50 @@
           </div>
       
           <!-- RIGHT: Image -->
-          <div class="col-lg-8 text-center">
+          <div class="col-lg-6 text-center">
             <img
               src="{% static 'main/images/homeprofile.png' %}"
               class="img-fluid border shadow-lg"
               alt="Example image"
-              width="800"
-              height="500"
+              width="500"
               loading="lazy"
             />
           </div>
       
         </div>
       </div>
+
+      <div class="col-12 col-md-8 mx-auto mw-100 px-4 pt-4 my-4">
+        <div class="row align-items-center g-5">
+      
+          <!-- LEFT: Content -->
+          
+      
+          <!-- RIGHT: Image -->
+          <div class="col-lg-6 text-center">
+            <img
+              src="{% static 'main/images/homestats.png' %}"
+              class="img-fluid border shadow-lg"
+              alt="Example image"
+              width="500"
+              loading="lazy"
+            />
+          </div>
+      <div class="col-lg-6 text-center text-lg-start">
+            <h2 class="text-center">
+              See how your stats compare to others in the community.
+            </h2>
+            <div class="d-flex justify-content-center">
+                <a class="btn btn-primary btn-lg px-4" href="{% url 'evaluate' %}">
+                  Compare Now
+                </a>
+              </div>
+          </div>
+        </div>
+      </div>
       
 
-    <div class="container px-4 py-5" id="hanging-icons">
-        
-
-        <div class="row g-4 py-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
-            <div class="col d-flex align-items-start">
-                <div class="icon-square bg-light text-dark flex-shrink-0 me-3">
-                    <span class="icon-emoji" aria-hidden="true">📊</span>
-                </div>
-                <div>
-                    <h3 class="fs-4">Player Insights</h3>
-                    <p>Deep analytics about player performance across matches and seasons.</p>
-                    <a href="{% url 'evaluate' %}" class="btn btn-sm btn-primary">Learn more</a>
-                </div>
-            </div>
-
-            <div class="col d-flex align-items-start">
-                <div class="icon-square bg-light text-dark flex-shrink-0 me-3">
-                    <span class="icon-emoji" aria-hidden="true">⚡</span>
-                </div>
-                <div>
-                    <h3 class="fs-4">Real-time Metrics</h3>
-                    <p>Quick feedback on current form so you can adapt and improve faster.</p>
-                    <a href="#" class="btn btn-sm btn-primary">Get started</a>
-                </div>
-            </div>
-
-            <div class="col d-flex align-items-start">
-                <div class="icon-square bg-light text-dark flex-shrink-0 me-3">
-                    <span class="icon-emoji" aria-hidden="true">🔒</span>
-                </div>
-                <div>
-                    <h3 class="fs-4">Secure & Private</h3>
-                    <p>Your data is protected. Share only what you want with teammates or coaches.</p>
-                    <a href="#" class="btn btn-sm btn-primary">Learn how</a>
-                </div>
-            </div>
-        </div>
-    </div>
+    
     
       
     

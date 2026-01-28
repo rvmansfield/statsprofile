@@ -164,7 +164,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/profile/'
 LOGOUT_REDIRECT_URL = '/' 
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
@@ -220,7 +220,7 @@ if not DEBUG:
 
 if DEBUG:
     
-    MEDIA_URL = "/media/"
+    MEDIA_URL = "/"
     MEDIA_ROOT = BASE_DIR / "media"
 
 
