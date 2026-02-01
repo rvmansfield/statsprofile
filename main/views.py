@@ -20,6 +20,9 @@ def index(request):
     
     return render(request, 'main/index.html')
 
+def contact(request):
+    return render(request, 'main/contact.html')
+
 
 def calculate_percentile(min_val, max_val, current_val):
     if max_val == min_val:

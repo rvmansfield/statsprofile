@@ -136,6 +136,17 @@
         {% block extra_css %}{% endblock %}
     </style>
 </head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-49HHLXNPXQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-49HHLXNPXQ');
+</script>
+
+
 <body>
    
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -167,7 +178,10 @@
     <!-- Collapsible menu -->
     <div class="collapse navbar-collapse justify-content-end" id="mainNavbar">
       <div class="navbar-nav align-items-md-center gap-2 mt-3 mt-md-0">
-
+            <a class="btn btn-primary btn-sm px-3"
+             href="{% url 'contact' %}">
+            Feedback
+          </a>
         {% if user.is_authenticated %}
           <span class="nav-item nav-link text-muted fw-semibold text-center">
             Welcome, <strong>{{ user.username }}</strong>
@@ -243,6 +257,9 @@
         <ul class="nav col-md-4 justify-content-end">
           <li class="nav-item">
             <a href="{% url 'index' %}" class="nav-link px-2 text-body-secondary">Home</a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'contact' %}" class="nav-link px-2 text-body-secondary">Contact Us</a>
           </li>
           <li class="nav-item">
             <a href="{% url 'profile' %}" class="nav-link px-2 text-body-secondary">Profile</a>

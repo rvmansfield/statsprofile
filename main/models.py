@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from PIL import Image
 
 User = get_user_model()
 
@@ -198,6 +199,17 @@ class PlayerProfile(models.Model):
     picture = models.ImageField(upload_to='media/player_pics/', blank=True, null=True,default="media/player_pics/default.jpg")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        img = Image.open(self.picture.path)
+
+        max_size = (800, 800)  # width, height
+        img.thumbnail(max_size, Image.LANCZOS)
+
+        img.save(self.picture.path, quality=85, optimize=True)
+
 
     def get_positions_list(self):
         """Return positions as a list of position codes"""
